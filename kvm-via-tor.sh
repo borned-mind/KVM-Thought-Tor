@@ -1,3 +1,4 @@
+#!/bin/bash
 function GET_BASH_COLOR {
               eval "$1='\033[$2;$3m'";
            }
@@ -5,24 +6,25 @@ GET_BASH_COLOR RED 0 31
 GET_BASH_COLOR GREEN 0 32
 GET_BASH_COLOR BROWN 0 33
 
-function AddToFile{
-	sudo echo $2 >> $1
+function AddToFile {
+	echo -e "${BROWN} adding to ${1} file${NOCOLOUR}"
+	sudo echo $2 >> $1 || echo -e "${RED}Can't add to file :(${NOCOLOUR}";exit 0
 }
 
 
-read -e -p "${BROWN}Name of Interface" -i "tornet" INTERFACE
-read -e -p "Name of Tap Interface" -i "tornet" TAPINTERFACE
-read -e -p "Port of Tor TransProxy" -i "9040" TRANSPROXPORT
-read -e -p "DNS Tor port" -i "5353" DNSPORT
-read -e -p "Addr${NOCOLOUR}" -i "10.100.100.0/24" ADDR
+read -e -p "Name of Interface: " -i "tornet" INTERFACE
+read -e -p "Name of Tap Interface: " -i "tap0" TAPINTERFACE
+read -e -p "Port of Tor TransProxy: " -i "9040" TRANSPROXPORT
+read -e -p "DNS Tor port: " -i "5353" DNSPORT
+read -e -p "Addr: " -i "10.100.100.0/24" ADDR
 
-function RUN_BRIDGE{
-	    brctl addbr $INTERFACE
-	    ip link set dev $INTERFACE up
-	    ip addr add 10.100.100.1/24 dev $INTERFACE
-	    ip tuntap add dev $TAPINTERFACE mode tap
-	    ip link set $TAPINTERFACE master $INTERFACE
-	    ip link set $TAPINTERFACE up promisc on
+function RUN_BRIDGE {
+	    sudo brctl addbr $INTERFACE
+	    sudo ip link set dev $INTERFACE up
+	    sudo ip addr add 10.100.100.1/24 dev $INTERFACE
+	    sudo ip tuntap add dev $TAPINTERFACE mode tap
+	    sudo ip link set $TAPINTERFACE master $INTERFACE
+	    sudo ip link set $TAPINTERFACE up promisc on
 }
 
 
@@ -64,10 +66,10 @@ if [ ! -f "/tmp/$pidfile" ]; then
 	    echo \$\$ > \$pidfile
 fi
 
-" >> /etc/libvirt/hooks/daemon || echo -e "${RED}Cannot add to daemon hooks${NOCOLOUR}" \
+" >> /etc/libvirt/hooks/daemon || echo -e "${RED}Cannot add to daemon hooks${NOCOLOUR}"; \
 	exit 1	
-echo -e "{BROWN} Add guy to 
-usermod -aG libvirt $(whoami)
+echo -e "${BROWN} Add guy to group${NOCOLOUR}"
+sudo usermod -aG libvirt $(whoami)
 
 RUN_BRIDGE
 
